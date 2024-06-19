@@ -1,15 +1,6 @@
-FROM node:18.12.0-alpine3.16 as web
-
-WORKDIR /opt/vue-fastapi-admin
-COPY /web ./web
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories \
-    && cd /opt/vue-fastapi-admin/web && npm i -g pnpm --registry=https://registry.npmmirror.com \
-    && pnpm i --registry=https://registry.npmmirror.com && pnpm run build
-
-
 FROM python:3.11-slim-bullseye
 
-WORKDIR /opt/vue-fastapi-admin
+WORKDIR /www/fastapi/drvser/vue-fastapi-drv
 ADD . .
 COPY /deploy/entrypoint.sh .
 
@@ -23,15 +14,15 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked,id=core-apt \
     && apt-get install -y --no-install-recommends gcc python3-dev bash nginx vim curl procps net-tools
 
 RUN pip install poetry -i https://pypi.tuna.tsinghua.edu.cn/simple \
+    && pip install aiomysql\
     && poetry config virtualenvs.create false \
     && poetry install
 
-COPY --from=web /opt/vue-fastapi-admin/web/dist /opt/vue-fastapi-admin/web/dist
+# COPY --from=web /www/fastapi/drvser/vue-fastapi-drv /www/fastapi/drvser/vue-fastapi-drv
 ADD /deploy/web.conf /etc/nginx/sites-available/web.conf
 RUN rm -f /etc/nginx/sites-enabled/default \ 
     && ln -s /etc/nginx/sites-available/web.conf /etc/nginx/sites-enabled/ 
 
 ENV LANG=zh_CN.UTF-8
-EXPOSE 80
 
 ENTRYPOINT [ "sh", "entrypoint.sh" ]
