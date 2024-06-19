@@ -10,7 +10,7 @@ export const basicRoutes = [
   },
   {
     name: t('views.workbench.label_workbench'),
-    path: '/',
+    path: '/workbench',
     component: Layout,
     redirect: '/workbench', // 默认跳转到首页
     children: [
